@@ -1381,7 +1381,7 @@ PROCESS (clk, cpu, OP1out, OP2out, opcode, exe_condition, nextpass, micro_state,
 		 build_bcd, set_Z_error, trapd, movem_run, last_data_read, set, set_V_Flag, z_error, trap_trace, trap_interrupt,
 		 SVmode, preSVmode, stop, long_done, ea_only, setstate, execOPC, exec_write_back, exe_datatype,
 		 datatype, interrupt, c_out, trapmake, rot_cnt, brief, addr, trap_trapv, last_data_in, use_VBR_Stackframe,
-		 long_start, set_datatype, sndOPC, set_exec, exec, ea_build_now, reg_QA, reg_QB, make_berr, trap_berr)
+		 long_start, set_datatype, sndOPC, set_exec, exec, ea_build_now, reg_QA, reg_QB, make_berr, trap_berr, non_aligned)
 	BEGIN
 		TG68_PC_brw <= '0';	
 		setstate <= "00";
@@ -1590,6 +1590,11 @@ PROCESS (clk, cpu, OP1out, OP2out, opcode, exe_condition, nextpass, micro_state,
 					END CASE;
 				WHEN OTHERS => NULL;
 			END CASE;
+		END IF;
+
+		IF cpu(1)='0' AND micro_state/=movep3 AND micro_state/=movep5 AND non_aligned='1' AND datatype/="00" AND state(1)='1' THEN --68000/68010: throw address error on word/long memory access with odd address
+			trap_addr_error <='1';
+			trapmake <= '1';
 		END IF;
 ------------------------------------------------------------------------------
 --prepare opcode
